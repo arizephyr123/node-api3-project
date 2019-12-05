@@ -23,7 +23,7 @@ router.post("/", validateUser, (req, res) => {
 
 //✅
 router.post("/:id/posts", validateUserId, validatePost, (req, res) => {
-  const userId = req.params.id;
+  const userId = req.user.id;
   const { id, text } = req.body;
   postObj = { id: id, text: text, user_id: userId };
   //console.log("POST to /:id/posts", postObj);
@@ -31,7 +31,7 @@ router.post("/:id/posts", validateUserId, validatePost, (req, res) => {
     .insert(postObj)
     .then(response => {
       res.status(200).json({
-        message: `Success Adding Post. /n post number ${response.id}: ${response.text}`
+        message: "Success Adding Post. /npost number" +`${response.id}: ${response.text}`
       });
     })
     .catch(err => {
@@ -77,7 +77,7 @@ router.get("/:id", validateUserId, (req, res) => {
 
 //✅
 router.get("/:id/posts", validateUserId, (req, res) => {
-  const id = req.params.id;
+  const id = req.user.id;
   userDb
     .getUserPosts(id)
     .then(response => {
@@ -97,7 +97,7 @@ router.get("/:id/posts", validateUserId, (req, res) => {
 
 //✅
 router.delete("/:id", validateUserId, (req, res) => {
-  const id = req.params.id;
+  const id = req.user.id;
   userDb
     .remove(id)
     .then(
@@ -115,7 +115,7 @@ router.delete("/:id", validateUserId, (req, res) => {
 
 //✅
 router.put("/:id", validateUserId, validateUser, (req, res) => {
-  const id = req.params.id;
+  const id = req.user.id;
   const changes = req.body;
   userDb
     .update(id, changes)
@@ -171,7 +171,7 @@ function validateUser(req, res, next) {
 function validatePost(req, res, next) {
   if (Object.keys(req.body).length === 0) {
     res.status(400).json({ message: "missing post data" });
-  } else if (req.body.text) {
+  } else if (!req.body.text) {
     res.status(400).json({ message: "missing required text field" });
   } else {
     next();
